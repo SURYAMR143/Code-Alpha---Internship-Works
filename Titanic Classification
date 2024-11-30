@@ -1,0 +1,87 @@
+titanic_data<-read.csv("titanic.csv")
+#reading file data and assign into variable car data
+
+
+head(titanic_data)
+#display the first few rows to verify that data is right 
+
+summary(titanic_data)
+#discription the data
+
+
+set.seed(456)
+#point to start
+
+
+train_index<-sample(1:nrow(titanic_data),0.8*nrow(titanic_data))
+#creating the index for data
+
+train_data<-titanic_data[train_index,]
+#get the train data using index
+
+test_data<-titanic_data[-train_index,]
+#get the test data using index
+
+
+logistic<-function(x){
+
+ 1/(1+exp(-x))
+
+}
+
+
+
+log_loss<-function(theta,X,y){
+
+ h<-logistic((X %*% theta)
+
+ -sum(y*log(h)+(1-y)*log(1-h))/length(y))
+
+}
+
+
+
+gradient_descent<-function(X,y,learning_rate,iterations){
+
+ theta<-rep(0,ncol(X))
+
+ for (i in 1:iterations) {
+
+  gradient<-t(X) %*% (logistic(X %*% theta) - y)/length(y)
+
+  theta<-theta - learning_rate*gradient
+
+ }
+
+ return(theta)
+
+}
+
+
+
+X_train<-as.matrix(train_data[,c("Passengerid","Sex","Age","sibsp")])
+#taking the matrix 
+y_train<-train_data$X2urvived
+
+
+
+theta<-gradient_descent(X_train,y_train,learning_rate = 0.01,iterations = 1000)
+
+
+
+X_test<-as.matrix(test_data[,c("Passengerid","Sex","Age","sibsp")])
+
+y_pred<-logistic(X_test %*% theta)
+
+y_pred<-ifelse(y_pred >0.5,1,0)
+#make condition to classify the data
+
+
+
+
+confusion_matrix<-table(test_data$X2urvived,y_pred)
+#arrange the data
+
+accuracy<-sum(diag(confusion_matrix))/sum(confusion_matrix)
+#find the accuracy of the classification 
+print(paste("Accuracy:",accuracy))
